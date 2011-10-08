@@ -1,5 +1,5 @@
 # Hermes.js
-Hermes.js is an highly extensible message/error handler system.
+Hermes.js. Highly extensible message/error handler system.
 
 #### Version 1.0
 
@@ -9,7 +9,8 @@ Hermes definition in Wikipedia:
 
 	"Hermes is the great messenger of the gods in Greek mythology and a guide to the Underworld"
 
-Hermes will log all the messages.
+Hermes will log all the messages for you.
+Defer or send your logs immediately.
 Different defined message types:
 
 * ALL
@@ -22,7 +23,7 @@ Different defined message types:
 
 And if you have some error you can add (or add it by the system if it's an uncaugh error) info about the file (filename or filename Url) and the line number where the error is logged.
 
-Another important thing is that:
+Another important things:
 
 * You can create your own errors or messages
 * You can create your own layouts
