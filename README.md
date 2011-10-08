@@ -33,6 +33,8 @@ Hermes is an error handler that allows you to create your own log appenders exte
 
 (Links will only work if you clone the repo.)
 
+[API documentation](examples_and_documents/jsdoc/index.html)
+
 [Examples](examples_and_documents/index.html) to see for yourself!
 
 ## Usage
@@ -46,8 +48,17 @@ You can add FileAppender:
 
 	<script type="text/javascript" src="/path/to/your/js/libs/FileAppender.js"></script>
 
-### Log Error:
+### Add Error:
+If Immediate mode is active the message will be logged immediately.
 	Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "Category", "Message", "", "" ) );
+
+### Log Error:
+Hermes will try to log all the deferred and pending errors.
+	Hermes.logger.log();
+
+### Force Log:
+Hermes will log all the deferred and pending error.
+	Hermes.logger.forceLog();
 
 ### Create a new Error
 	var NewError = function(sFilenameUrl, nLineNumber)
@@ -86,6 +97,8 @@ You can add FileAppender:
 ## Documentation
 
 (Links will only work if you clone the repo.)
+
+[API documentation](examples_and_documents/jsdoc/index.html)
 
 [Examples](examples_and_documents/index.html) to see for yourself!
 
