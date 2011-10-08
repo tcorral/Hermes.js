@@ -1,8 +1,8 @@
 <html>
 	<head>
-		<title>Uncaught Error</title>
+		<title>Deferred</title>
 		<script type="text/javascript" src="js/Hermes.js"></script>
-		<!--<script type="text/javascript" src="js/FileAppender.js"></script>-->
+		<script type="text/javascript" src="js/FileAppender.js"></script>
 	</head>
 	<body>
 		Open your console or developer tools to see it work!
@@ -16,8 +16,6 @@
 			//Add new Error
 			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "2__Special Error", "What a message2!", "", "" ) );
 
-			//The uncaught errors are logged too.
-			throw new Error("Test error message");
 		</script>
 	</body>
 </html>
