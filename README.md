@@ -105,7 +105,7 @@ Start tracing:
 
 Stop tracing:
 
-	Hermes.tracer.untraceAll(oTest);
+	Hermes.tracer.untraceAll();
 
 ## Documentation
 
