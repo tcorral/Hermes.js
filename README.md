@@ -98,6 +98,15 @@ Hermes will log all the deferred and pending error.
 		//Your implementation must be here
 	};
 
+### Trace methods in objects
+Start tracing:
+
+	Hermes.tracer.traceAll(oTest);
+
+Stop tracing:
+
+	Hermes.tracer.untraceAll(oTest);
+
 ## Documentation
 
 (Links will only work if you clone the repo.)
