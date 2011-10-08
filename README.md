@@ -51,14 +51,17 @@ You can add FileAppender:
 
 ### Add Error:
 If Immediate mode is active the message will be logged immediately.
+
 	Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "Category", "Message", "", "" ) );
 
 ### Log Error:
 Hermes will try to log all the deferred and pending errors.
+
 	Hermes.logger.log();
 
 ### Force Log:
 Hermes will log all the deferred and pending error.
+
 	Hermes.logger.forceLog();
 
 ### Create a new Error
