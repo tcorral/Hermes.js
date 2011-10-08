@@ -29,8 +29,8 @@ TestCase("HermesLoggerConstructorTest", sinon.testCase({
 	"test should return Logger.IMMEDIATE by default for nImmediate": function () {
 		assertEquals(1, window.Hermes.logger.nImmediate);
 	},
-	"test should return 10000 by default for nTimeout": function () {
-		assertEquals(10000, window.Hermes.logger.nTimeout);
+	"test should return 5000 by default for nTimeout": function () {
+		assertEquals(5000, window.Hermes.logger.nTimeout);
 	},
 	tearDown: function () {
 		this.clock.restore();
@@ -340,7 +340,7 @@ TestCase("HermesLoggerIsTimeToSentTest", sinon.testCase({
 
 		var bRetrieved = window.Hermes.logger.isTimeToSent();
 
-		assertTrue(bRetrieved);
+		assertFalse(bRetrieved);
 	},
 	"test should return false if now returns a greater value than nextTimeToSent": function () {
 		this.oNextTimeToSentStub.returns(1);
@@ -348,7 +348,7 @@ TestCase("HermesLoggerIsTimeToSentTest", sinon.testCase({
 
 		var bRetrieved = window.Hermes.logger.isTimeToSent();
 
-		assertFalse(bRetrieved);
+		assertTrue(bRetrieved);
 	},
 	tearDown: function () {
 		window.Hermes.logger.nextTimeToSent.restore();
@@ -525,7 +525,7 @@ TestCase("HermesErrorConstructorTest", sinon.testCase({
 	},
 	"test should return 'undefined file' for sFilenameUrl  if nothing is supplied": function () {
 		var oError = new window.Hermes.error();
-		assertEquals('undefined file', oError.sFilenameUrl);
+		assertNull(oError.sFilenameUrl);
 	},
 	"test should return 'ESPECIAL Error' for sFilenameUrl  if we supply 'ESPECIAL Error'": function () {
 		var oError = new window.Hermes.error(null, '', '', 'filename');
@@ -533,7 +533,7 @@ TestCase("HermesErrorConstructorTest", sinon.testCase({
 	},
 	"test should return 'undefined file' for nLineNumber  if nothing is supplied": function () {
 		var oError = new window.Hermes.error();
-		assertEquals('undefined line', oError.nLineNumber);
+		assertNull(oError.nLineNumber);
 	},
 	"test should return 'ESPECIAL Error' for nLineNumber  if we supply 10": function () {
 		var oError = new window.Hermes.error(null, '', '', '', 10);
