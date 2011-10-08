@@ -24,7 +24,7 @@ And if you have some error you can add (or add it by the system if it's an uncau
 
 Another important thing is that:
 
-* You can create your own errors
+* You can create your own errors or messages
 * You can create your own layouts
 * You can create your own appenders
 
