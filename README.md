@@ -1,5 +1,5 @@
 # Hermes.js
-Hermes.js is an error handler system.
+Hermes.js is an highly extensible message/error handler system.
 
 #### Version 1.0
 
@@ -27,6 +27,7 @@ Another important thing is that:
 * You can create your own errors or messages
 * You can create your own layouts
 * You can create your own appenders
+* You can create your own levels
 
 Hermes is an error handler that allows you to create your own log appenders extending the Appender abstract class and define your log and clear methods.
 
