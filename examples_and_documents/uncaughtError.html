@@ -1,0 +1,37 @@
+<html>
+	<head>
+		<title>Deferred</title>
+		<script type="text/javascript" src="js/Hermes.js"></script>
+		<!--<script type="text/javascript" src="js/FileAppender.js"></script>-->
+	</head>
+	<body>
+		Open your console or developer tools to see it work!
+		<script type="text/javascript">
+			var Test = function()
+			{
+
+			};
+			Test.prototype.alert = function()
+			{
+				alert("test");
+			};
+			var oTest = new Test();
+			//Change the log to be deferred.
+			Hermes.logger.deferLog();
+			Hermes.logger.setLevel(Hermes.level.TRACE);
+			Hermes.tracer.traceAll(oTest);
+			//This commented line change the Level of Error to be shown
+			//Hermes.logger.setLevel(Hermes.level.DEBUG);
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "1__Special Error", "What a message1!", "", "" ) );
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "2__Special Error", "What a message2!", "", "" ) );
+			//Force the log even if we set the deferred type of logging.
+			Hermes.logger.forceLog();
+			//The uncaught errors are logged too.
+			//throw new Error("test");
+			oTest.alert();
+
+		</script>
+	</body>
+</html>

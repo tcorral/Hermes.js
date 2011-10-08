@@ -14,6 +14,33 @@
    * @type Hermes
    */
   var Hermes = null,
+  	/**
+  	 * Trace is the private declaration of the Trace object.
+  	 * Trace is declared null by default
+  	 * @private
+  	 * @type Trace
+  	 */
+  	Trace = null,
+  	/**
+  	 * Tracer is the private declaration of the Tracer object.
+  	 * Tracer is declared null by default
+  	 * @private
+  	 * @type Tracer
+  	 */
+  	Tracer = null,
+  	/**
+  	 * TraceMessage is the private declaration of the TraceMessage object.
+  	 * TraceMessage is declared null by default
+  	 * @private
+  	 * @type TraceMessage
+  	 */
+  	TraceMessage = null,/**
+     * oTracer is the instance of Tracer object.
+     * oTracer is declared null by default.
+     * @private
+     * @type Tracer
+     */
+    oTracer = null,
     /**
      * oHermes is the instance of Hermes object.
      * oHermes is declared null by default.
@@ -77,7 +104,7 @@
      * @private
      * @type Number
      */
-    nTimeoutToLogMilliseconds = 10000;
+    nTimeoutToLogMilliseconds = 5000;
   /**
    * isFunction checks if fpCallback is function or not
    * @private
@@ -93,6 +120,15 @@
    */
   function existObjectAndMethod(oObject, sMethod) {
     return oObject && isFunction(oObject[sMethod]);
+  }
+  /**
+   * times count the executions and add this as indentation
+   * @private
+   * @return {Number}
+   */
+  function times(nCount)
+  {
+  	return nCount < 1 ? '' : new Array(nCount + 1).join(" ");
   }
   /**
    * getTypeFromMessage returns the type of error extracted from message
@@ -223,11 +259,24 @@
     var sError = '';
     if (oError instanceof ErrorExt) {
       sError = "Error level: " + oError.oLevel.toString() +
-        ", Time: " + oError.getFormattedDate() +
-        ", Category: " + oError.sCategory +
-        ", Message: " + oError.sMessage +
-        ", FilenameUrl: " + oError.sFilenameUrl +
-        ", LineNumber: " + oError.nLineNumber;
+        ", Time: " + oError.getFormattedDate();
+		if(oError.sCategory !== null)
+		{
+			sError += ", Category: " + oError.sCategory;
+		}
+		if(oError.sMessage !== null)
+		{
+			sError += ", Message: " + oError.sMessage
+		}
+		if(oError.sFilenameUrl !== null)
+		{
+			sError += ", FilenameUrl: " + oError.sFilenameUrl
+		}
+		if(oError.nLineNumber !== null)
+		{
+			sError += ", LineNumber: " + oError.nLineNumber
+		}
+		sError += '.';
     }
     return sError;
   };
@@ -374,7 +423,7 @@
    * @return Hermes instance
    */
   Hermes.prototype.setLevel = function (oLevel) {
-    if (oLevel instanceof Level) {
+  	if (oLevel instanceof Level) {
       this.oLevel = oLevel;
     }
     return this;
@@ -484,7 +533,7 @@
    * @return {Boolean}
    */
   Hermes.prototype.isTimeToSent = function () {
-    return this.nextTimeToSent() >= this.now();
+    return this.now() >= this.nextTimeToSent();
   };
   /**
    * notifyAppenders send the message log for all the Appenders if the execution is Deferred and is time to send new logs or if the execution is Immediate.
@@ -499,14 +548,23 @@
       oAppender = null;
     sAction = sAction.toLowerCase();
 
-    if ((!this.isImmediate() && this.isTimeToSent()) || this.isImmediate()) {
-      for (sKey in this.oAppenders) {
-        if (this.oAppenders.hasOwnProperty(sKey)) {
-          oAppender = this.oAppenders[sKey];
-          this.sendMessage(oAppender, sAction);
-        }
-      }
-      this.resetErrors();
+    if (this.isImmediate())
+    {
+    	for (sKey in this.oAppenders) {
+    		if (this.oAppenders.hasOwnProperty(sKey)) {
+    			oAppender = this.oAppenders[sKey];
+    			this.sendMessage(oAppender, sAction);
+    		}
+    	}
+    	this.resetErrors();
+    } else if (this.isTimeToSent()){
+		for (sKey in this.oAppenders) {
+    		if (this.oAppenders.hasOwnProperty(sKey)) {
+    			oAppender = this.oAppenders[sKey];
+    			this.sendMessage(oAppender, sAction);
+    		}
+    	}
+    	this.resetErrors();
     }
     return this;
   };
@@ -697,11 +755,11 @@
      * @member ErrorExt.prototype
      * @type {String}
      */
-    this.sFilenameUrl = sFilenameUrl || 'undefined file';
+    this.sFilenameUrl = sFilenameUrl || null;
     /**
      * nFileNumber is the number of line where the error is launched
      */
-    this.nLineNumber = nLineNumber || 'undefined line';
+    this.nLineNumber = nLineNumber || null;
   };
   /**
    * setFilenameUrl change the sFilenameUrl
@@ -904,18 +962,122 @@
    */
   Level.ALL = new Level(Level.nALL, "ALL");
 
+  TraceMessage = function(sMessage)
+  {
+	ErrorExt.apply(this, [Level.TRACE, 'Trace Message', sMessage]);
+  };
+  TraceMessage.prototype = new ErrorExt();
+
+  Trace = function (oConstructor, sMethodName, oTracer) {
+	this.sIndentString = '';
+	this.oConstructor = oConstructor;
+	this.sMethodName = sMethodName;
+	this.oTracer = oTracer;
+  };
+  Trace.prototype.formatArguments = function (aArgs)
+  {
+	return '(' + aArgs.join(", ") + ')';
+  };
+  Trace.prototype.getIndentation = function (bLastIndent) {
+  	var sIndent = '';
+  	/*if (bLastIndent) {
+  		sIndent = this.sIndentString;
+  	} else {
+		sIndent = this.sIndentString =  times(this.oTracer.nIndentCount += 4);
+  	}*/
+  	return sIndent;
+  };
+  Trace.prototype.getMethodNameIndentedAndParams = function(aArgs)
+  {
+  	return (this.getIndentation() + this.sMethodName + this.formatArguments(aArgs));
+  };
+  Trace.prototype.getProfile = function(nStart, oResult)
+  {
+	var sNow = +new Date();
+	return this.getIndentation(true) + this.sMethodName + ' -> result: ' + oResult + '. (' + (sNow - nStart) +'ms)';
+  };
+  Trace.prototype.wrap = function()
+  {
+  	var sKey = '';
+  	for(sKey in this.oConstructor)
+  	{
+		this[sKey] = this.oConstructor[sKey];
+  	}
+  };
+
+  Tracer = function () {
+	this.rNativeCode = /\[native code\]/;
+	this.nIndentCount = -4;
+	this.aTracing = [];
+  };
+  Tracer.prototype.trace = function (oConstructor, sMethodName) {
+	var oTrace = new Trace(oConstructor, sMethodName, this);
+	oTrace.wrap();
+	oHermes.addError(new TraceMessage("Tracing: " + sMethodName));
+	return function () {
+		var oResult = null,
+  			nStart = +new Date(),
+  			aArgs = Array.prototype.slice.call(arguments);
+  		oHermes.addError(new TraceMessage(oTrace.getMethodNameIndentedAndParams(aArgs)));
+		oResult = oConstructor.apply(oTrace, arguments);
+		oHermes.addError(new TraceMessage(oTrace.getProfile(nStart, oResult)));
+		return oResult;
+	}
+  };
+  Tracer.prototype.addTracing = function(oTracing)
+  {
+  	this.aTracing.push(oTracing);
+  };
+  Tracer.prototype.traceAll = function (oRoot, bRecurse)
+  {
+	var sKey = '';
+	var oThat = null;
+	if ((oRoot === win) || !((typeof oRoot === 'object')) || (typeof oRoot === 'function')) {
+		return;
+	}
+	for(sKey in oRoot) {
+		if (oRoot[sKey] !== oRoot)
+		{
+			oThat = oRoot[sKey];
+			if (typeof oThat === 'function') {
+				if ((this !== oRoot) && !oThat.oConstructor && !this.rNativeCode.test(oThat)) {
+					oRoot[sKey] = this.trace(oRoot[sKey], sKey);
+					this.addTracing({
+						oObj: oRoot,
+						sMethodName: sKey
+					});
+				}
+			}
+			bRecurse && this.traceAll(oThat, true);
+		}
+	}
+  };
+  Tracer.prototype.resetTracing = function () {
+  	this.aTracking = [];
+  };
+  Tracer.prototype.untraceAll = function () {
+  	var nTrace = 0;
+	var aTracing = this.aTracing;
+	var nLenTrace = aTracing.length;
+	var oTrace = null;
+	for (; nTrace < nLenTrace; nTrace++) {
+		oTrace = aTracing[nTrace];
+		oTrace.oObj[oTrace.sMethodName] = oTrace.oObj[oTrace.sMethodName].oConstructor;
+	}
+	oHermes.addError(new TraceMessage("Tracing disabled"));
+	this.resetTracing();
+  };
   /*
    * oHermes is the instance of Hermes.
    */
   oHermes = new Hermes(Level.ALL, Hermes.IMMEDIATE).addAppender(new ConsoleAppender());
-
   /*
    * fpErrorTrap is the method that will be called when uncaught errors are launched
    * Returns false to avoid default behaviour.
    * @return {Boolean}
    */
   win.onerror = function fpErrorTrap(oErrorMsg, sFileNameUrl, nLineNumber) {
-    oHermes.addError(new ErrorExt(oHermes.oLevel, getTypeFromMessage(oErrorMsg), removeTypeFromMessage(oErrorMsg), sFileNameUrl, nLineNumber));
+  	oHermes.addError(new ErrorExt(oHermes.oLevel, getTypeFromMessage(oErrorMsg), removeTypeFromMessage(oErrorMsg), sFileNameUrl, nLineNumber));
     return false;
   };
   /*
@@ -926,6 +1088,7 @@
     appender: Appender,
     level: Level,
     error: ErrorExt,
-    layout: Layout
+    layout: Layout,
+    tracer: new Tracer()
   };
 }(window));

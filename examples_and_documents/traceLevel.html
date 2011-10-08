@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<title>Deferred</title>
+		<script type="text/javascript" src="js/Hermes.js"></script>
+		<!--<script type="text/javascript" src="js/FileAppender.js"></script>-->
+	</head>
+	<body>
+		<p>Open your console or developer tools to see it work!</p>
+		<div>You will see only messages with the Level.TRACE and the messages that trace the execution of the selected object.</div>
+		<script type="text/javascript">
+			//Change the log to be immediate
+			Hermes.logger.immediateLog();
+			Hermes.logger.setLevel(Hermes.level.TRACE);
+			var Test = function()
+			{
+
+			};
+			Test.prototype.alert = function()
+			{
+				alert("test");
+			};
+			Test.prototype.addToFive = function(nNumber)
+			{
+				return nNumber + 5;
+			};
+			var oTest = new Test();
+
+			Hermes.tracer.traceAll(oTest);
+
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "1__Special Error", "What a message1!", "", "" ) );
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.ERROR, "2__Special Error", "What a message2!", "", "" ) );
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.TRACE, "3__Special Error", "What a message3!", "", "" ) );
+
+			//Execute alert in oTest that must be logged
+			oTest.alert();
+			//Execute addToFive with an argument in oTest that must be logged
+			oTest.addToFive(7);
+		</script>
+	</body>
+</html>
