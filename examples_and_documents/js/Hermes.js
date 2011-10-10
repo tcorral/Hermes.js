@@ -55,33 +55,9 @@
      * @type ErrorExt
      */
     ErrorExt = null,
-    /**
-     * Appender is the private declaration of the Appender object.
-     * Appender is declared null by default.
-     * @private
-     * @type Appender
-     */
     Appender = null,
-    /**
-     * ConsoleAppender is the private declaration of the ConsoleAppender object.
-     * ConsoleAppender is declared null by default.
-     * @private
-     * @type ConsoleAppender
-     */
     ConsoleAppender = null,
-    /**
-     * Layout is the private declaration of the Layout object.
-     * Layout is declared null by default.
-     * @private
-     * @type Layout
-     */
     Layout = null,
-    /**
-     * ConsoleLayout is the private declaration of the ConsoleLayout object.
-     * ConsoleLayout is declared null by default.
-     * @private
-     * @type ConsoleLayout
-     */
     ConsoleLayout = null,
     /**
      * Level is the private declaration of the Level object.
@@ -119,7 +95,7 @@
    * @return {Boolean}
    */
   function existObjectAndMethod(oObject, sMethod) {
-    return oObject && isFunction(oObject[sMethod]);
+    return oObject && oObject[sMethod];
   }
   /**
    * times count the executions and add this as indentation
