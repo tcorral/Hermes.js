@@ -111,8 +111,6 @@ Stop tracing:
 
 ## Documentation
 
-(Links will only work if you clone the repo.)
-
 [API documentation from cloned repo](examples_and_documents/jsdoc/index.html)
 
 [API documentation](tree/master/examples_and_documents/jsdoc/index.html)
