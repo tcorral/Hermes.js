@@ -55,7 +55,6 @@
      * @type ErrorExt
      */
     ErrorExt = null,
-
     Appender = null,
     ConsoleAppender = null,
     Layout = null,
@@ -96,7 +95,7 @@
    * @return {Boolean}
    */
   function existObjectAndMethod(oObject, sMethod) {
-    return oObject && isFunction(oObject[sMethod]);
+    return oObject && oObject[sMethod];
   }
   /**
    * times count the executions and add this as indentation
