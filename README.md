@@ -34,11 +34,11 @@ Hermes is an error handler that allows you to create your own log appenders exte
 
 [API documentation from cloned repo](examples_and_documents/jsdoc/index.html)
 
-[API documentation](examples_and_documents/tree/master/jsdoc/index.html)
+[API documentation](examples_and_documents/tree/master/Hermes.js/jsdoc/index.html)
 
 [Examples from cloned repo](examples_and_documents/index.html) to see for yourself!
 
-[Examples](examples_and_documents/tree/master/index.html) to see for yourself!
+[Examples](examples_and_documents/tree/master/Hermes.js/index.html) to see for yourself!
 
 ## Usage
 
@@ -115,11 +115,11 @@ Stop tracing:
 
 [API documentation from cloned repo](examples_and_documents/jsdoc/index.html)
 
-[API documentation](examples_and_documents/tree/master/jsdoc/index.html)
+[API documentation](examples_and_documents/tree/master/Hermes.js/jsdoc/index.html)
 
 [Examples from cloned repo](examples_and_documents/index.html) to see for yourself!
 
-[Examples](examples_and_documents/tree/master/index.html) to see for yourself!
+[Examples](examples_and_documents/tree/master/Hermes.js/index.html) to see for yourself!
 
 
 ## License
