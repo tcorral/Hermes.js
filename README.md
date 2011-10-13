@@ -32,11 +32,13 @@ Another important things:
 
 Hermes is an error handler that allows you to create your own log appenders extending the Appender abstract class and define your log and clear methods.
 
-(Links will only work if you clone the repo.)
+[API documentation from cloned repo](examples_and_documents/jsdoc/index.html)
 
-[API documentation](examples_and_documents/jsdoc/index.html)
+[API documentation](examples_and_documents/tree/master/jsdoc/index.html)
 
-[Examples](examples_and_documents/index.html) to see for yourself!
+[Examples from cloned repo](examples_and_documents/index.html) to see for yourself!
+
+[Examples](examples_and_documents/tree/master/index.html) to see for yourself!
 
 ## Usage
 
