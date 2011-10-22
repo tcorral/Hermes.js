@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<title>Force Log Deferred</title>
+		<script type="text/javascript" src="js/Hermes.js"></script>
+		<!--<script type="text/javascript" src="js/FileAppender.js"></script>-->
+	</head>
+	<body>
+		<p>Open your console or developer tools to see it work!</p>
+		<div>You will see the first log immediately after forceLog execution.</div>
+		<div>Wait for 6 seconds to see the other two logs on your console.</div>
+		<script type="text/javascript">
+			//Change the log to be deferred.
+			Hermes.logger.deferLog();
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "1__Special Error", "What a message1!", "", "" ) );
+
+			//Force the log even if we set the deferred type of logging.
+			Hermes.logger.forceLog();
+
+			//Add new Error
+			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "2__Special Error", "What a message2!", "", "" ) );
+
+			setTimeout(function(){
+				//Add new Error
+				Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "3__Special Error", "What a message3!", "", "" ) );
+			}, 6000);
+		</script>
+	</body>
+</html>

@@ -1,77 +1,237 @@
-<!DOCTYPE html>
 <html>
-<head>
-  <meta charset='utf-8'>
-
-  <title>tcorral/Hermes.js @ GitHub</title>
-
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #01d670;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #fe298f; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #fe298f; }
-    h3 { text-align: center; color: #fe298f; }
-    a { color: #fe298f; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
-</head>
-
-<body>
-  <a href="http://github.com/tcorral/Hermes.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/tcorral/Hermes.js/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/tcorral/Hermes.js/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
-
-    <h1><a href="http://github.com/tcorral/Hermes.js">Hermes.js</a>
-      <span class="small">by <a href="http://github.com/tcorral">tcorral</a></span></h1>
-
-    <div class="description">
-      Message and Error logger implementation
-    </div>
-
-    <h2>Authors</h2>
-<p>Tomas Corral Casas (amischol@gmail.com)<br/>      </p>
-<h2>Contact</h2>
-<p>Tomás Corral Casas (amischol@gmail.com)<br/>      </p>
-
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/tcorral/Hermes.js/zipball/master">zip</a> or
-      <a href="http://github.com/tcorral/Hermes.js/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/tcorral/Hermes.js</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/tcorral/Hermes.js">tcorral/Hermes.js</a>
-    </div>
-
-  </div>
-
-  
-</body>
+	<head>
+		<link href="css/style.css" rel="stylesheet" type="text/css"/>
+	</head>
+	<body>
+		<header>
+			<hgroup class="downloads">
+				<a href="http://github.com/tcorral/Hermes.js/zipball/master">
+					<img border="0" width="90" src="img/zip.png">
+				</a>
+				<a href="http://github.com/tcorral/Hermes.js/tarball/master">
+					<img border="0" width="90" src="img/tar.png">
+				</a>
+			</hgroup>
+			<hgroup>
+				<img src="img/logo.png" width="464" height="161"/>
+				<h1>Hermes.js</h1>
+			</hgroup>
+			<hgroup class="fRight">
+				<ul>
+					<li>
+						<h5><a href="#description">Description</a></h5>
+					</li>
+					<li>
+						<h5><a href="#usage">Usage</a></h5>
+					</li>
+					<li>
+						<h5><a href="#download">Download</a></h5>
+					</li>
+					<li>
+						<h5><a href="#license">License</a></h5>
+					</li>
+				</ul>
+			</hgroup>
+		</header>
+		<section>
+			<ul id="contents">
+				<li id="description">
+					<h2>
+						Description:
+					</h2>
+					<div class="contentSection">
+						<h3>
+							Hermes definition in Wikipedia:
+						</h3>
+						<pre>
+"Hermes is the great messenger of the gods in Greek mythology and a guide to the Underworld"
+						</pre>
+						<h4>
+							Hermes will log all the messages for you. Defer or send your logs immediately. Different defined message types:
+						</h4>
+						<ul>
+							<li>ALL</li>
+							<li>DEBUG</li>
+							<li>INFO</li>
+							<li>TRACE</li>
+							<li>WARNING</li>
+							<li>ERROR</li>
+							<li>FATAL</li>
+						</ul>
+						<p>
+							And if you have some error you can add (or add it by the system if it's an uncaugh error) info about the file (filename or filename Url) and the line number where the error is logged.
+						</p>
+						<h4>
+							Another important things:
+						</h4>
+						<ul>
+							<li>You can create your own errors or messages</li>
+							<li>You can create your own layouts</li>
+							<li>You can create your own appenders</li>
+							<li>You can create your own levels</li>
+						</ul>
+						<h4>
+							Hermes is an error handler that allows you to create your own log appenders extending the Appender abstract class and define your log and clear methods.
+						</h4>
+						<h5>
+							<a href="examples_and_documents/jsdoc/index.html">API documentation</a>
+						</h5>
+						<h5>
+							<a href="examples_and_documents/index.html">Examples to see for yourself!</a>
+						</h5>
+					</div>
+				</li>
+				<li id="usage">
+					<h2>
+						Usage:
+					</h2>
+					<div class="contentSection">
+						<h3>
+							Before using it:
+						</h3>
+						<h4>
+							Insert in your code:
+						</h4>
+						<pre>
+&lt;script type="text/javascript" src="/path/to/your/js/libs/Hermes.js"&gt;&lt;/script&gt;
+						</pre>
+						<h4>
+							Add Error:
+						</h4>
+						<div>
+							If Immediate mode is active the message will be logged immediately.
+						</div>
+						<pre>
+Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG,
+				"Category", "Message", "", "" ) );
+						</pre>
+						<h4>
+							Log Error:
+						</h4>
+						<div>
+							Hermes will try to log all the deferred and pending errors.
+						</div>
+						<pre>
+Hermes.logger.log();
+						</pre>
+						<h4>
+							Force Log:
+						</h4>
+						<div>
+							Hermes will log all the deferred and pending error.
+						</div>
+						<pre>
+Hermes.logger.forceLog();
+						</pre>
+						<h4>
+							Create a new Error:
+						</h4>
+						<pre>
+var NewError = function(sFilenameUrl, nLineNumber)
+{
+	Hermes.error.apply(this, [Level.INFO, 'New Error', 'The error message',
+					sFilenameUrl, nLineNumber, sDateFormat]);
+};
+NewError.prototype = new Hermes.error();
+						</pre>
+						<h4>
+							Create a new Layout:
+						</h4>
+						<pre>
+var NewLayout = function()
+{
+	Hermes.layout.apply(this, arguments);
+};
+NewLayout.prototype = new Hermes.layout();
+NewLayout.prototype.formatError = function(oError)
+{
+	//Your implementation must be here
+};
+						</pre>
+						<h4>
+							Create a new Appender:
+						</h4>
+						<pre>
+var NewAppender = function(oLevel, sCategory, sMessage, sFilenameUrl, nLineNumber,
+				sDateFormat)
+{
+	Hermes.appender.apply(this, arguments);
+	this.oLayout = new NewLayout();
+};
+NewAppender.prototype = new Hermes.appender();
+NewAppender.prototype.log = function(oError)
+{
+	//Your implementation must be here
+};
+NewAppender.prototype.clear = function(oError)
+{
+	//Your implementation must be here
+};
+						</pre>
+						<h4>
+							Trace methods in objects:
+						</h4>
+						<h5>
+							Start tracing:
+						</h5>
+						<pre>
+Hermes.tracer.traceAll(oTest);
+						</pre>
+						<h5>
+							Stop tracing:
+						</h5>
+						<pre>
+Hermes.tracer.untraceAll();
+						</pre>
+					</div>
+				</li>
+				<li id="download">
+					<h2>
+						Download:
+					</h2>
+					<div class="contentSection">
+						<ul>
+							<li>
+								<a href="">Developer version - 33kb</a>
+							</li>
+							<li>
+								<a href="">Minimized version - 8kb</a>
+							</li>
+							<li>
+								<a href="">Gzipped version - 2kb</a>
+							</li>
+						</ul>
+					</div>
+				</li>
+				<li id="license">
+					<h2>
+						License:
+					</h2>
+					<div class="contentSection">
+						<div>
+							Copyright (c) 2011 Tom&aacute;s Corral Casas
+						<div>
+						<p>
+							Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+							and associated documentation files (the "Software"), to deal in the Software without
+							restriction, including without limitation the rights to use, copy, modify, merge, publish,
+							distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+							Software is furnished to do so, subject to the following conditions:
+						</p>
+						<p>
+							The above copyright notice and this permission notice shall be included in all copies or
+							substantial portions of the Software.
+						</p>
+						<p>
+							THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+							BUT NOT LIMITED	TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+							NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE	LIABLE FOR ANY CLAIM,
+							DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF	CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+							OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+						</p>
+					</div>
+				</li>
+			</ul>
+		</section>
+	</body>
 </html>
