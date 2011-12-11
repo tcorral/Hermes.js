@@ -23,8 +23,6 @@ section
 	margin-top: 55px;
 	margin-left: 60px;
 	width: 881px;
-	height: 488px;
-	background:transparent url(../img/sectionBackground.png) left top;
 }
 #contents
 {
@@ -33,20 +31,27 @@ section
 	padding: 0;
 	width: 881px;
 	height: 488px;
-	overflow: hidden;
 	position: relative;
 }
 #contents > li
 {
 	margin: 0px;
+	margin-top: 5px;
+	margin-bottom: 15px;
 	padding: 0px;
 	text-indent: 0;
-	width: 840px;
+	width: 885px;
 	height: 470px;
-	margin-left: 20px;
+	padding-left: 20px;
 	color: #ccc;
 	font-size: 0.8em;
 	padding-top: 20px;
+	background:transparent url(../img/sectionBackground.png) left top no-repeat;
+}
+#contents > li > a.right
+{
+	float:right;
+	padding-right: 60px;
 }
 #contents > li > div.contentSection
 {
@@ -54,7 +59,8 @@ section
 	overflow-y: auto;
 	overflow-x: none;
 	width: 840px;
-	height: 390px;
+	height: 370px;
+	margin-bottom: 15px;
 }
 pre
 {
