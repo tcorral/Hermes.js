@@ -1,7 +1,16 @@
 # Hermes.js
 Hermes.js. Highly extensible message/error handler system.
 
-#### Version 1.0
+## Changelog
+
+1.1.0
+
+* Fix bug in isSameLevel method that returns a boolean value when checking the error type.
+* Added DisruptorError error to log errors that needs to avoid continue with the execution flow.
+
+1.0.0
+
+* First commit.
 
 ## Description
 
@@ -20,6 +29,7 @@ Different defined message types:
 * WARNING
 * ERROR
 * FATAL
+* DISRUPTOR
 
 And if you have some error you can add (or add it by the system if it's an uncaugh error) info about the file (filename or filename Url) and the line number where the error is logged.
 
