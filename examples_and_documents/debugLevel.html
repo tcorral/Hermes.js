@@ -2,7 +2,8 @@
 	<head>
 		<title>Debug Level</title>
 		<script type="text/javascript" src="js/Hermes.js"></script>
-		<!--<script type="text/javascript" src="js/FileAppender.js"></script>-->
+        <script type="text/javascript" src="js/ConsoleAppender.js"></script>
+        <script type="text/javascript" src="js/config.js"></script>
 	</head>
 	<body>
 		<p>Open your console or developer tools to see it work!</p>
@@ -13,11 +14,11 @@
 			Hermes.logger.immediateLog();
 			Hermes.logger.setLevel(Hermes.level.DEBUG);
 			//Add new Error
-			Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "1__Special Error", "What a message1!", "", "" ) );
+			Hermes.logger.addMessage( new Hermes.message( Hermes.level.DEBUG, "1__Special Error", "What a message1!", "", "" ) );
 			//Add new Error
-			Hermes.logger.addError( new Hermes.error( Hermes.level.ERROR, "2__Special Error", "What a message2!", "", "" ) );
+			Hermes.logger.addMessage( new Hermes.message( Hermes.level.ERROR, "2__Special Error", "What a message2!", "", "" ) );
 			//Add new Error
-			Hermes.logger.addError( new Hermes.error( Hermes.level.TRACE, "3__Special Error", "What a message3!", "", "" ) );
+			Hermes.logger.addMessage( new Hermes.message( Hermes.level.TRACE, "3__Special Error", "What a message3!", "", "" ) );
 		</script>
 	</body>
 </html>

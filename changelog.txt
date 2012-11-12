@@ -1,0 +1,8 @@
+1.1.0
+
+* Fix bug in isSameLevel method that returns a boolean value when checking the error type.
+* Added DisruptorError error to log errors that needs to avoid continue with the execution flow.
+
+1.0.0
+
+* First commit.

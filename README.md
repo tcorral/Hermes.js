@@ -1,16 +1,7 @@
 # Hermes.js
 Hermes.js. Highly extensible message/error handler system.
 
-## Changelog
-
-1.1.0
-
-* Fix bug in isSameLevel method that returns a boolean value when checking the error type.
-* Added DisruptorError error to log errors that needs to avoid continue with the execution flow.
-
-1.0.0
-
-* First commit.
+[Changelog](http://tcorral.github.com/Hermes.js/changelog.txt)
 
 ## Description
 
@@ -42,8 +33,6 @@ Another important things:
 
 Hermes is an error handler that allows you to create your own log appenders extending the Appender abstract class and define your log and clear methods.
 
-[API documentation](http://tcorral.github.com/Hermes.js/examples_and_documents/jsdoc/index.html)
-
 [Examples](http://tcorral.github.com/Hermes.js/examples_and_documents/index.html) to see for yourself!
 
 ## Usage
@@ -53,14 +42,10 @@ Insert in your code:
 
 	<script type="text/javascript" src="/path/to/your/js/libs/Hermes.js"></script>
 
-You can add FileAppender:
-
-	<script type="text/javascript" src="/path/to/your/js/libs/FileAppender.js"></script>
-
-### Add Error:
+### Add Message:
 If Immediate mode is active the message will be logged immediately.
 
-	Hermes.logger.addError( new Hermes.error( Hermes.level.DEBUG, "Category", "Message", "", "" ) );
+	Hermes.logger.addMessage( new Hermes.message( Hermes.level.DEBUG, "Category", "Message", "", "" ) );
 
 ### Log Error:
 Hermes will try to log all the deferred and pending errors.
@@ -72,12 +57,12 @@ Hermes will log all the deferred and pending error.
 
 	Hermes.logger.forceLog();
 
-### Create a new Error
+### Create a new Message/Error
 	var NewError = function(sFilenameUrl, nLineNumber)
 	{
-		Hermes.error.apply(this, [Level.INFO, 'New Error', 'The error message', sFilenameUrl, nLineNumber, sDateFormat]);
+		Hermes.message.apply(this, [Level.INFO, 'New Error or message', 'The error or message', sFilenameUrl, nLineNumber, sDateFormat]);
 	};
-	NewError.prototype = new Hermes.error();
+	NewError.prototype = new Hermes.message();
 
 ### Create a new Layout
 	var NewLayout = function()
@@ -85,7 +70,7 @@ Hermes will log all the deferred and pending error.
 		Hermes.layout.apply(this, arguments);
 	};
 	NewLayout.prototype = new Hermes.layout();
-	NewLayout.prototype.formatError = function(oError)
+	NewLayout.prototype.format = function(oMessage)
 	{
 		//Your implementation must be here
 	};
@@ -106,20 +91,7 @@ Hermes will log all the deferred and pending error.
 		//Your implementation must be here
 	};
 
-### Trace methods in objects
-Start tracing:
-
-	Hermes.tracer.traceAll(oTest);
-
-Stop tracing:
-
-	Hermes.tracer.untraceAll();
-
 ## Documentation
-
-[API documentation from cloned repo](examples_and_documents/jsdoc/index.html)
-
-[API documentation](/tcorral/Hermes.js/tree/master/examples_and_documents/jsdoc/index.html)
 
 [Examples from cloned repo](examples_and_documents/index.html) to see for yourself!
 

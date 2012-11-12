@@ -1,107 +1,19 @@
-(function (win, doc, NS, undefined) {
+/**
+ * Hermes is the class that allows to log messages to different appender depending of level to show.
+ * Highly extensible. You can create your own Appender and add it to Hermes.
+ * The idea was to create a handler for error and messages in the same way as Log4JS but being more extensible.
+ * @author Tomas Corral
+ * @fileOverview
+ */
+(function (win, doc, ns, und) {
 	'use strict';
+	var Hermes, oHerm, oHermes, Level, Message, Appender, Layout;
 	/**
-	 * If NS is undefined we change it to window
+	 * If ns is undefined we change it to window
 	 */
-	if(NS === undefined)
+	if(ns === und)
 	{
-		NS = win;
-	}
-	/**
-	 * Hermes is the class that allows to log messages to different appender depending of level to show.
-	 * Highly extensible. You can create your own Appender and add it to Hermes.
-	 * The idea was to create an ErrorHandler in the same way as Log4JS but being more extensible.
-	 * @author Tomas Corral Casas
-	 * @version 1.0
-	 */
-	/**
-	 * Hermes is the private declaration of the Hermes object.
-	 * Hermes is declared null by default.
-	 * @private
-	 * @type Function
-	 */
-	var Hermes = null,
-		/**
-		 * Trace is the private declaration of the Trace object.
-		 * Trace is declared null by default
-		 * @private
-		 * @type Trace
-		 */
-			Trace = null,
-		/**
-		 * Tracer is the private declaration of the Tracer object.
-		 * Tracer is declared null by default
-		 * @private
-		 * @type Tracer
-		 */
-			Tracer = null,
-		/**
-		 * TraceMessage is the private declaration of the TraceMessage object.
-		 * TraceMessage is declared null by default
-		 * @private
-		 * @type TraceMessage
-		 */
-			TraceMessage = null,
-		/**
-		 * oHermes is the instance of Hermes object.
-		 * oHermes is declared null by default.
-		 * @private
-		 * @type Hermes
-		 */
-			oHermes = null,
-		/**
-		 * ErrorExt is the private declaration of the ErrorExt object.
-		 * ErrorExt is declared null by default.
-		 * @private
-		 * @type ErrorExt
-		 */
-			ErrorExt = null,
-			Appender = null,
-			ConsoleAppender = null,
-			Layout = null,
-			ConsoleLayout = null,
-		/**
-		 * Level is the private declaration of the Level object.
-		 * Level is declared null by default.
-		 * @private
-		 * @type Level
-		 */
-			Level = null,
-		/**
-		 * DateFormatter is the private declaration of the DateFormatter object.
-		 * DateFormatter is declared null by default.
-		 * @private
-		 * @type DateFormatter
-		 */
-			DateFormatter = null,
-		/**
-		 * DisruptorError is the private declaration of the DisruptorError object
-		 * DisruptorError is declared null by default.
-		 * @private
-		 * @type DisruptorError
-		 */
-			DisruptorError = null,
-		/**
-		 * nTimeoutToLogMilliseconds is the default value for nTimeout in Hermes to defer the log of message
-		 * If we need to log messages to one DB it's important not to launch so much Ajax calls
-		 * nTimeoutToLogMilliseconds is declared 10000 by default.
-		 * @private
-		 * @type Number
-		 */
-			nTimeoutToLogMilliseconds = 5000,
-		/**
-		 * sDisruptorMessage is the message by default to differentiate between disruptorErrors and all the others when throwing errors.
-		 * @private
-		 * @type String
-		 */
-			sDisruptorMessage = 'DISRUPTOR_ERROR';
-	/**
-	 * existObjectAndMethod checks if sMethod exist on oObject
-	 * @private
-	 * @return {Boolean}
-	 */
-	function existObjectAndMethod(oObject, sMethod) {
-		return oObject && oObject[sMethod];
+		ns = win;
 	}
 
 	/**
@@ -110,8 +22,7 @@
 	 * @returns {String}
 	 */
 	function getTypeFromMessage(sMessage) {
-		var nIndexDoubleColon = sMessage.indexOf(":");
-		return sMessage.substr(0, nIndexDoubleColon);
+		return sMessage.substr(0, sMessage.indexOf(":"));
 	}
 
 	/**
@@ -120,669 +31,112 @@
 	 * @returns {String}
 	 */
 	function removeTypeFromMessage(sMessage) {
-		var sType = getTypeFromMessage(sMessage);
-		return sMessage.replace(sType + ":", "");
+		return sMessage.replace(getTypeFromMessage(sMessage) + ":", "");
 	}
-
+	var oDateFormatter;
 	/**
-	 * Appender is the class that will log or clear messages
-	 * @abstract
+	 * Message is the class that represents the message
 	 * @private
-	 * @class Appender
+	 * @class Message
 	 * @constructor
-	 * @param oLayout
-	 * @type {Layout}
+	 * @param {Level} oLevel
+	 * @param {String} sCategory
+	 * @param {String} sMessage
+	 * @param {String} sFilenameUrl
+	 * @param {Number} nLineNumber
 	 */
-	Appender = function (oLayout) {
+	Message = function (oLevel, sCategory, sMessage, sFilenameUrl, nLineNumber) {
 		/**
-		 * sName is the name of the appender
-		 * @member Appender.prototype
-		 * @type {String}
-		 */
-		this.sName = '[object Appender]';
-		/**
-		 * oLayout is the Layout instance to be used to format the error before append it
-		 * @member Appender.prototype
-		 * @type {Layout}
-		 */
-		this.oLayout = oLayout || null;
-	};
-	/**
-	 * setName is the method to set the name of Appender
-	 * @member Appender.prototype
-	 * @param sName
-	 * @type {String}
-	 * @return Appender instance
-	 */
-	Appender.prototype.setName = function (sName) {
-		this.sName = sName;
-		return this;
-	};
-	/**
-	 * setLayout is the method to set the layout for Appender
-	 * @member Appender.prototype
-	 * @param oLayout
-	 * @type {Layout}
-	 * @return Appender instance
-	 */
-	Appender.prototype.setLayout = function (oLayout) {
-		this.oLayout = oLayout;
-		return this;
-	};
-	/**
-	 * toString is the method to overwrite the Object.prototype.toString
-	 * @member Appender.prototype
-	 * @return {String}
-	 */
-	Appender.prototype.toString = function () {
-		return this.sName;
-	};
-	/**
-	 * log is an abstract method that needs to be overwritten on extended classes to make it work.
-	 * @member Appender.prototype
-	 * @param oError
-	 * @type {ErrorExt}
-	 */
-	Appender.prototype.log = function (oError) {
-		throw new Error("This method must be overwritten!");
-	};
-	/**
-	 * clear is an abstract method that needs to be overwritten on extended classes to make it work.
-	 * @member Appender.prototype
-	 */
-	Appender.prototype.clear = function () {
-		throw new Error("This method must be overwritten!");
-	};
-	/**
-	 * Layout is the class that will format the errors before send it to the Appender class
-	 * @abstract
-	 * @private
-	 * @class Layout
-	 * @constructor
-	 */
-	Layout = function () {
-
-	};
-	/**
-	 * formatError is an abstract method that needs to be overwritten on extended classes to make it work.
-	 * @member Layout.prototype
-	 * @param oError
-	 * @type {ErrorExt}
-	 */
-	Layout.prototype.formatError = function (oError) {
-		throw new Error("This method must be overwritten!");
-	};
-	/**
-	 * ConsoleLayout is a class to format log messages.
-	 * @extends Layout
-	 * @private
-	 * @class ConsoleLayout
-	 * @constructor
-	 */
-	ConsoleLayout = function () {
-		Layout.apply(this);
-	};
-	ConsoleLayout.prototype = new Layout();
-	/**
-	 * formatError is a method to format the error.
-	 * @member ConsoleLayout.prototype
-	 * @param oError
-	 * @type {ErrorExt}
-	 * @return sError
-	 * @type {String}
-	 */
-	ConsoleLayout.prototype.formatError = function (oError) {
-		var sError = '';
-		if (oError instanceof ErrorExt) {
-			sError = "Error level: " + oError.oLevel.toString() +
-				", Time: " + oError.getFormattedDate();
-			if (oError.sCategory !== null) {
-				sError += ", Category: " + oError.sCategory;
-			}
-			if (oError.sMessage !== null) {
-				sError += ", Message: " + oError.sMessage
-			}
-			if (oError.sFilenameUrl !== null) {
-				sError += ", FilenameUrl: " + oError.sFilenameUrl
-			}
-			if (oError.nLineNumber !== null) {
-				sError += ", LineNumber: " + oError.nLineNumber
-			}
-			sError += '.';
-		}
-		return sError;
-	};
-	/**
-	 * ConsoleAppender is a class to append log messages in the console.
-	 * @extends Appender
-	 * @private
-	 * @class ConsoleAppender
-	 * @constructor
-	 */
-	ConsoleAppender = function (oLayout) {
-		Appender.apply(this, arguments);
-		/**
-		 * sName is the name of the appender
-		 * @member ConsoleAppender.prototype
-		 * @type {String}
-		 */
-		this.sName = '[object ConsoleAppender]';
-		/**
-		 * oLayout is the Layout instance to be used to format the error before append it
-		 * @member ConsoleAppender.prototype
-		 * @type {ConsoleLayout}
-		 */
-		this.oLayout = new ConsoleLayout();
-	};
-	ConsoleAppender.prototype = new Appender();
-	/**
-	 * log is the method that logs the message to the console.
-	 * Before log it's needed to check if console exist.
-	 * @member ConsoleAppender.prototype
-	 * @param oError
-	 * @type {ErrorExt}
-	 */
-	ConsoleAppender.prototype.log = function (oError) {
-		if (existObjectAndMethod(win.console, "log")) {
-			win.console.log(this.oLayout.formatError(oError));
-		}
-	};
-	/**
-	 * clear is the method that clear all the logged messages in the console.
-	 * Before clear it's needed to check if console exist.
-	 * @member ConsoleAppender.prototype
-	 */
-	ConsoleAppender.prototype.clear = function () {
-		if (existObjectAndMethod(win.console, "clear")) {
-			win.console.clear();
-		}
-	};
-	/**
-	 * Hermes is the class that manages Appender, Error, Deferred calls and Levels of Error to show
-	 * We can add Errors but if the Error is not of the same level the error will not be showed.
-	 * If the Hermes Error Level is ALL all the logs will be added
-	 * If the Hermes Error Level is OFF no log will be added
-	 * The add of logs can be deferred to avoid multiple calls that block browser
-	 * @private
-	 * @class Hermes
-	 * @constructor
-	 * @param oLevel
-	 * @type {Level}
-	 * @param nImmediate
-	 * @type {Number}
-	 * @param nTimeout
-	 * @type {Number}
-	 */
-	Hermes = function (oLevel, nImmediate, nTimeout) {
-		/**
-		 * oAppender is the object that will contain the Appender to append messages
-		 * @member Hermes.prototype
-		 * @type {Object}
-		 */
-		this.oAppender = {};
-		/**
-		 * aErrors is the array that will contain the Errors
-		 * @member Hermes.prototype
-		 * @type {Array}
-		 */
-		this.aErrors = [];
-		/**
-		 * oLevel is the Level instance to manage the Error Level to show.
-		 * @member Hermes.prototype
+		 * oLevel is the Message Level to know if it can be logged or not.
+		 * @member Message.prototype
 		 * @type {Level}
 		 */
 		this.oLevel = oLevel || Level.ALL;
 		/**
-		 * nTimeLastSent is the number of milliseconds of the last sent
-		 * now date by default
-		 * @member Hermes.prototype
-		 * @type {Number}
-		 */
-		this.nTimeLastSent = this.now();
-		/**
-		 * nImmediate is the config number to defer or not the append of logs
-		 * @member Hermes.prototype
-		 * @type {Number}
-		 */
-		this.nImmediate = nImmediate || Hermes.DEFERRED;
-		/**
-		 * nTimeout is the number of milliseconds to defer the append of logs
-		 * @member Hermes.prototype
-		 * @type {Number}
-		 */
-		this.nTimeout = nTimeout || nTimeoutToLogMilliseconds;
-	};
-	/**
-	 * @static
-	 */
-	Hermes.DEFERRED = 0;
-	/**
-	 * @static
-	 */
-	Hermes.IMMEDIATE = 1;
-	/**
-	 * deferLog change the method to append logs to be deferred
-	 * @member Hermes.prototype
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.deferLog = function () {
-		this.nImmediate = Hermes.DEFERRED;
-		return this;
-	};
-	/**
-	 * immediateLog change the method to append logs to be immediate
-	 * @member Hermes.prototype
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.immediateLog = function () {
-		this.nImmediate = Hermes.IMMEDIATE;
-		return this;
-	};
-	/**
-	 * now returns the number of milliseconds at the moment of the execution of this method
-	 * @member Hermes.prototype
-	 * @return {Number} Milliseconds
-	 */
-	Hermes.prototype.now = function () {
-		return +new Date();
-	};
-	/**
-	 * setLevel set a new Level for the Hermes
-	 * Before change the level it's checked if oLevel is instance of Level to be assigned or not.
-	 * @member Hermes.prototype
-	 * @param oLevel
-	 * @type {Level}
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.setLevel = function (oLevel) {
-		if (oLevel instanceof Level) {
-			this.oLevel = oLevel;
-		}
-		return this;
-	};
-	/**
-	 * addAppender add a new Appender to Hermes. When the Appender is added starts to log messages
-	 * Before add a new Appender it's checked if oAppender is instance of Appender to be added or not.
-	 * @member Hermes.prototype
-	 * @param oAppender
-	 * @type {Appender}
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.addAppender = function (oAppender) {
-		if (oAppender instanceof Appender) {
-			this.oAppender[oAppender.toString()] = oAppender;
-		}
-		return this;
-	};
-	/**
-	 * removeAppender removes the Appender. When the Appender is removed stops to log messages
-	 * @member Hermes.prototype
-	 * @param oAppender
-	 * @type {Appender}
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.removeAppender = function (oAppender) {
-		delete this.oAppender[oAppender.toString()];
-		return this;
-	};
-	/**
-	 * setAppender add an array of Appender to be added in one step.
-	 * @member Hermes.prototype
-	 * @param aAppender
-	 * @type {Array}
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.setAppender = function (aAppender) {
-		var nAppender = 0,
-			nLenAppender = aAppender.length,
-			oAppender = null;
-
-		for (nAppender = 0; nAppender < nLenAppender; nAppender = nAppender + 1) {
-			oAppender = aAppender[nAppender];
-			this.addAppender(oAppender);
-		}
-		/*
-		 * try-finally pattern is used to be able to remove all the variables from memory when using it in a method that returns something.
-		 * return is don in try and the 'nullify' of variables must be done in the finally block.
-		 */
-		try {
-			return this;
-		} finally {
-			nAppender = nLenAppender = oAppender = null;
-		}
-	};
-	/**
-	 * isSameLevel checks if the Error Level is the same that in oError
-	 * The method returns true if Level is ALL to allow log all the logs
-	 * The method returns false if Level is OFF to avoid log any log
-	 * @member Hermes.prototype
-	 * @param oError
-	 * @type {ErrorExt}
-	 * @return {Boolean}
-	 */
-	Hermes.prototype.isSameLevel = function (oError) {
-		if (this.oLevel.valueOf() === Level.ALL.valueOf()) {
-			return true;
-		} else if (this.oLevel.valueOf() === Level.OFF.valueOf()) {
-			return false;
-		} else {
-			return this.oLevel.valueOf() === oError.oLevel.valueOf();
-		}
-	};
-	/**
-	 * sendMessage executes the action in Appender for each Error.
-	 * @member Hermes.prototype
-	 * @param oAppender
-	 * @type {Appender}
-	 * @param sAction
-	 * @type {String}
-	 */
-	Hermes.prototype.sendMessage = function (oAppender, sAction) {
-		var nError = 0,
-			nLenError = this.aErrors.length,
-			oError = null;
-		if (oAppender[sAction] === undefined) {
-			return;
-		}
-
-		for (; nError < nLenError;nError = nError + 1) {
-			oError = this.aErrors[nError];
-			if (this.isSameLevel(oError)) {
-				oAppender[sAction](oError);
-			}
-		}
-		this.nTimeLastSent = this.now();
-	};
-	/**
-	 * isImmediate checks if nImmediate is equals to Hermes.IMMEDIATE
-	 * @member Hermes.prototype
-	 * @return {Boolean}
-	 */
-	Hermes.prototype.isImmediate = function (oError) {
-		return this.nImmediate === Hermes.IMMEDIATE || (oError !== undefined && oError instanceof DisruptorError);
-	};
-	/**
-	 * isTimeToSend checks if now is time to sent new logs to the appender
-	 * @member Hermes.prototype
-	 * @return {Boolean}
-	 */
-	Hermes.prototype.isTimeToSend = function () {
-		return this.now() >= this.nextTimeToSend();
-	};
-	/**
-	 * notifyAppender send the message log for all the Appender if the execution is Deferred and is time to send new logs or if the execution is Immediate.
-	 * after execute notifyAppender the errors are reset to allow new Errors to log.
-	 * @member Hermes.prototype
-	 * @param sAction
-	 * @type {String}
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.notifyAppender = function (sAction, oError) {
-		var sKey = '',
-			oAppender = null;
-		sAction = sAction.toLowerCase();
-
-		if (this.isImmediate(oError) || this.isTimeToSend()) {
-			for (sKey in this.oAppender) {
-				if (this.oAppender.hasOwnProperty(sKey)) {
-					oAppender = this.oAppender[sKey];
-					this.sendMessage(oAppender, sAction);
-				}
-			}
-			this.resetErrors();
-		}
-		/**
-		 * This conditional checks if the instance of the error needs to stop the execution throwing an Error that will not be tracked again.
-		 */
-		if(oError !== undefined && oError instanceof DisruptorError)
-		{
-			throw new Error(sDisruptorMessage);
-		}
-		return this;
-	};
-	/**
-	 * addError check if oError is instance of ErrorExt and if it's the error is added and the notifyAppender is called
-	 * notifyAppender is executed to defer or log the message.
-	 * @member Hermes.prototype
-	 * @param oError
-	 * @type {ErrorExt}
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.addError = function (oError) {
-		if (oError instanceof ErrorExt) {
-			this.aErrors.push(oError);
-			this.log(oError);
-		}
-		return this;
-	};
-	/**
-	 * resetErrors clean all the errors in the aErrors Array
-	 * @member Hermes.prototype
-	 */
-	Hermes.prototype.resetErrors = function () {
-		this.aErrors = [];
-	};
-	/**
-	 * nextTimeToSend returns the time to know, if the method of log is Deferred, if it's possible to log messages.
-	 * @member Hermes.prototype
-	 * @return {Number}
-	 */
-	Hermes.prototype.nextTimeToSend = function () {
-		return this.nTimeLastSent + this.nTimeout;
-	};
-	/**
-	 * forceLog will log messages even if the method of log is Deferred.
-	 * @member Hermes.prototype
-	 * @return Hermes instance
-	 */
-	Hermes.prototype.forceLog = function () {
-		this.immediateLog();
-		this.log();
-		this.deferLog();
-		return this;
-	};
-	/**
-	 * log is the method that will log messages
-	 * @member Hermes.prototype
-	 */
-	Hermes.prototype.log = function (oError) {
-		this.notifyAppender("log", oError);
-	};
-	/**
-	 * clear is the method that will clear messages
-	 * @member Hermes.prototype
-	 */
-	Hermes.prototype.clear = function () {
-		this.notifyAppender("clear");
-	};
-	/**
-	 * DateFormatter is the class to format dates
-	 * @private
-	 * @class DateFormatter
-	 * @constructor
-	 * @param sFormat
-	 * @type {String}
-	 */
-	DateFormatter = function (sFormat) {
-		this.sFormat = sFormat || DateFormatter.DEFAULT;
-	};
-	/**
-	 * @static
-	 */
-	DateFormatter.DEFAULT = "yyyy-MM-dd  hh:mm:ss TZ";
-	/**
-	 * setDefaultFormat change the format to format the date
-	 * @member DateFormatter.prototype
-	 * @param sFormat
-	 * @type {String}
-	 * @return DateFormatter instance
-	 */
-	DateFormatter.prototype.setDefaultFormat = function (sFormat) {
-		this.sFormat = sFormat || DateFormatter.DEFAULT;
-		return this;
-	};
-	/**
-	 * formatDate returns the string with the formatted date.
-	 * @member DateFormatter.prototype
-	 * @param oDate
-	 * @type {Date}
-	 */
-	DateFormatter.prototype.formatDate = function (oDate) {
-		var nDay = this.addZero(oDate.getDate()),
-			nMonth = this.addZero(oDate.getMonth() + 1),
-			nYearLong = oDate.getFullYear(),
-			sYearShort = String(nYearLong).substring(3, 4),
-			nYear = this.sFormat.indexOf("yyyy") > -1 ? nYearLong : sYearShort,
-			nHours = this.addZero(oDate.getHours()),
-			nMinutes = this.addZero(oDate.getMinutes()),
-			nSeconds = this.addZero(oDate.getSeconds()),
-			nTimeZone = this.getTimeZoneOffset(oDate),
-			sDate = this.sFormat.replace(/dd/g, nDay).replace(/MM/g, nMonth).replace(/y{1,4}/g, nYear);
-		sDate = sDate.replace(/hh/g, nHours).replace(/mm/g, nMinutes).replace(/ss/g, nSeconds);
-		sDate = sDate.replace(/TZ/g, nTimeZone);
-		/*
-		 * try-finally pattern is used to be able to remove all the variables from memory when using it in a method that returns something.
-		 * return is don in try and the 'nullify' of variables must be done in the finally block.
-		 */
-		try {
-			return sDate;
-		} finally {
-			nDay = nMonth = nYearLong = nYear = nHours = nMinutes = nSeconds = nTimeZone = sDate = null;
-			sYearShort = null;
-		}
-	};
-	/**
-	 * addZero is a method that adds a Zero to all the number that are less than 10
-	 * @member DateFormatter.prototype
-	 * @param nNumber
-	 * @type {Number}
-	 * @return {String}
-	 */
-	DateFormatter.prototype.addZero = function (nNumber) {
-		return ((nNumber < 10) ? "0" : "") + nNumber;
-	};
-	/**
-	 * getTimeZoneOffset set the timezone and returns the difference
-	 * @member DateFormatter.prototype
-	 * @param oDate
-	 * @type {Date}
-	 * @return {String}
-	 */
-	DateFormatter.prototype.getTimeZoneOffset = function (oDate) {
-		var nOffset = Math.abs(oDate.getTimezoneOffset()),
-			nHour = this.addZero(Math.floor(nOffset / 60)),
-			nMinutes = this.addZero((nOffset % 60));
-		/*
-		 * try-finally pattern is used to be able to remove all the variables from memory when using it in a method that returns something.
-		 * return is don in try and the 'nullify' of variables must be done in the finally block.
-		 */
-		try {
-			return oDate.getTimezoneOffset() < 0 ? "+" + nHour + ":" + nMinutes : "-" + nHour + ":" + nMinutes;
-		} finally {
-			nOffset = nHour = nMinutes = null;
-		}
-	};
-	/**
-	 * ErrorExt is the class that represents the Error
-	 * @private
-	 * @class ErrorExt
-	 * @constructor
-	 * @param oLevel
-	 * @type {Level}
-	 * @param sCategory
-	 * @type {String}
-	 * @param sMessage
-	 * @type {String}
-	 * @param sFilenameUrl
-	 * @type {String}
-	 * @param nLineNumber
-	 * @type {Number}
-	 * @param sDateFormat
-	 * @type {String}
-	 */
-	ErrorExt = function (oLevel, sCategory, sMessage, sFilenameUrl, nLineNumber, sDateFormat) {
-		/**
-		 * oLevel is the Error Level to know if it can be logged or not.
-		 * @member ErrorExt.prototype
-		 * @type {Level}
-		 */
-		this.oLevel = oLevel || Level.ALL;
-		/**
-		 * sCategory is the error category
-		 * @member ErrorExt.prototype
+		 * sCategory is the message category
+		 * @member Message.prototype
 		 * @type {String}
 		 */
 		this.sCategory = sCategory || 'GENERAL';
 		/**
-		 * sMessage is the error message
-		 * @member ErrorExt.prototype
+		 * sMessage is the message message
+		 * @member Message.prototype
 		 * @type {String}
 		 */
-		this.sMessage = sMessage || 'Error Undefined';
+		this.sMessage = sMessage || 'Message Undefined';
 		/**
 		 * dInitialize sets the instantiation date
-		 * @member ErrorExt.prototype
+		 * @member Message.prototype
 		 * @type {Date}
 		 */
 		this.dInitialize = new Date();
 		/**
 		 * oDateFormatter is the instance of DateFormatter after set the default format
-		 * @member ErrorExt.prototype
-		 * @type {DateFormatter}
+		 * @member Message.prototype
+		 * @type {*}
 		 */
-		this.oDateFormatter = new DateFormatter().setDefaultFormat(sDateFormat);
+		this.oDateFormatter = oDateFormatter || null;
 		/**
-		 * sFilenameUrl is the url or filename to the file where the error is launched
-		 * @member ErrorExt.prototype
+		 * sFilenameUrl is the url or filename to the file where the message is launched
+		 * @member Message.prototype
 		 * @type {String}
 		 */
 		this.sFilenameUrl = sFilenameUrl || null;
 		/**
-		 * nFileNumber is the number of line where the error is launched
+		 * nFileNumber is the number of line where the message is launched
 		 */
 		this.nLineNumber = nLineNumber || null;
 	};
 	/**
+	 * setDateFormatter sets the formatter of the date
+	 * @param oDateFormat
+	 * @return {Message}
+	 */
+	Message.setDateFormatter = function(oDateFormat){
+		oDateFormatter = oDateFormat;
+		return this;
+	};
+	/**
 	 * setFilenameUrl change the sFilenameUrl
-	 * @member ErrorExt.prototype
+	 * @member Message.prototype
 	 * @param sFilenameUrl
 	 * @type {String}
-	 * @return ErrorExt instance
+	 * @return {Message}
 	 */
-	ErrorExt.prototype.setFilenameUrl = function (sFilenameUrl) {
+	Message.prototype.setFilenameUrl = function (sFilenameUrl) {
 		this.sFilenameUrl = sFilenameUrl;
 		return this;
 	};
 	/**
 	 * setLineNumber change the nLineNumber
-	 * @member ErrorExt.prototype
+	 * @member Message.prototype
 	 * @param nLineNumber
 	 * @type {Number}
-	 * @return ErrorExt instance
+	 * @return {Message}
 	 */
-	ErrorExt.prototype.setLineNumber = function (nLineNumber) {
+	Message.prototype.setLineNumber = function (nLineNumber) {
 		this.nLineNumber = nLineNumber;
 		return this;
 	};
 	/**
 	 * setCategory change the sCategory
-	 * @member ErrorExt.prototype
+	 * @member Message.prototype
 	 * @param sCategory
 	 * @type {String}
-	 * @return ErrorExt instance
+	 * @return {Message}
 	 */
-	ErrorExt.prototype.setCategory = function (sCategory) {
+	Message.prototype.setCategory = function (sCategory) {
 		this.sCategory = sCategory;
 		return this;
 	};
 	/**
 	 * setLevel change the level if oLevel is instance of Level
-	 * @member ErrorExt.prototype
+	 * @member Message.prototype
 	 * @param oLevel
 	 * @type {Level}
-	 * @return ErrorExt instance
+	 * @return {Message}
 	 */
-	ErrorExt.prototype.setLevel = function (oLevel) {
+	Message.prototype.setLevel = function (oLevel) {
 		if (oLevel instanceof Level) {
 			this.oLevel = oLevel;
 		}
@@ -790,36 +144,49 @@
 	};
 	/**
 	 * setMessage change the sMessage
-	 * @member ErrorExt.prototype
+	 * @member Message.prototype
 	 * @param sMessage
 	 * @type {String}
-	 * @return ErrorExt instance
+	 * @return {Message}
 	 */
-	ErrorExt.prototype.setMessage = function (sMessage) {
+	Message.prototype.setMessage = function (sMessage) {
 		this.sMessage = sMessage;
 		return this;
 	};
 	/**
 	 * setDateFormat change the sDateFormat
-	 * @member ErrorExt.prototype
+	 * @member Message.prototype
 	 * @param sDateFormat
 	 * @type {String}
-	 * @return ErrorExt instance
+	 * @return {Message}
 	 */
-	ErrorExt.prototype.setDateFormat = function (sDateFormat) {
+	Message.prototype.setDateFormat = function (sDateFormat) {
 		this.sDateFormat = sDateFormat;
 		return this;
 	};
 	/**
-	 * getFormattedDate returns the error Date after format it
-	 * @member ErrorExt.prototype
+	 * getFormattedDate returns the message Date after format it
+	 * @member Message.prototype
 	 * @return {String}
 	 */
-	ErrorExt.prototype.getFormattedDate = function () {
-		return this.oDateFormatter.formatDate(this.dInitialize);
+	Message.prototype.getFormattedDate = function () {
+		var sDate = '';
+		if(this.oDateFormatter !== null)
+		{
+			sDate =  this.oDateFormatter.formatDate(this.dInitialize);
+		}
+		return sDate;
 	};
 	/**
-	 * Level is the class that sets the Error level
+	 * Utils to be used when looking for type in message
+	 * @type {Object}
+	 */
+	Message.utils = {
+		getTypeFromMessage: getTypeFromMessage,
+		removeTypeFromMessage: removeTypeFromMessage
+	};
+	/**
+	 * Level is the class that sets the Message level
 	 * @private
 	 * @class Level
 	 * @constructor
@@ -831,37 +198,6 @@
 	Level = function (nLevel, sLevel) {
 		this.nLevel = nLevel;
 		this.sLevel = sLevel;
-	};
-	/**
-	 * getLevel return the Level from the sLevel Name
-	 * @param sLevel
-	 * @type {String}
-	 * @return oNewLevel
-	 * @type Level
-	 */
-	Level.prototype.getLevel = function (sLevel) {
-		var oNewLevel = Level[sLevel];
-		if (oNewLevel !== undefined) {
-			return oNewLevel;
-		}
-		oNewLevel = null;
-		return null;
-	};
-	/**
-	 * toString overwrites the Object.prototype.toString to return the name of the Level
-	 * @return sLevel
-	 * @type {String}
-	 */
-	Level.prototype.toString = function () {
-		return this.sLevel;
-	};
-	/**
-	 * valueOf returns the number of Level
-	 * @return nLevel
-	 * @type {Number}
-	 */
-	Level.prototype.valueOf = function () {
-		return this.nLevel;
 	};
 	/**
 	 * @static
@@ -954,260 +290,474 @@
 	 */
 	Level.ALL = new Level(Level.nALL, "ALL");
 	/**
-	 * TraceMessage is the message class for automatic Trace
-	 * @private
-	 * @extends ErrorExt
-	 * @class TraceMessage
-	 * @constructor
-	 * @param sMessage
+	 * getLevel return the Level from the sLevel Name
+	 * @param sLevel
+	 * @type {String}
+	 * @return oNewLevel
+	 * @type Level
+	 */
+	Level.prototype.getLevel = function (sLevel) {
+		var oNewLevel = Level[sLevel];
+		if (oNewLevel !== undefined) {
+			return oNewLevel;
+		}
+		oNewLevel = null;
+		return null;
+	};
+	/**
+	 * toString overwrites the Object.prototype.toString to return the name of the Level
+	 * @return sLevel
 	 * @type {String}
 	 */
-	TraceMessage = function(sMessage) {
-		ErrorExt.apply(this, [Level.TRACE, 'Trace Message', sMessage]);
-	};
-	TraceMessage.prototype = new ErrorExt();
-	/**
-	 * Trace is the class that manage all the info to be used in Tracer.
-	 * @private
-	 * @class Trace
-	 * @constructor
-	 * @param oConstructor
-	 * @type {Function}
-	 * @param sMethodName
-	 * @type {String}
-	 * @param oTracer
-	 * @type {Tracer}
-	 */
-	Trace = function (oConstructor, sMethodName, oTracer) {
-		/**
-		 * sIndentString is the number of spaces to indent functions.
-		 * Missing modification - maybe in the next version -
-		 * @member Trace.prototype
-		 * @type {String}
-		 */
-		this.sIndentString = '';
-		/**
-		 * oConstructor is the oConstructor to trace
-		 * @member Trace.prototype
-		 * @type {Function}
-		 */
-		this.oConstructor = oConstructor;
-		/**
-		 * sMethodName is the name of the oConstructor
-		 * @member Trace.prototype
-		 * @type {String}
-		 */
-		this.sMethodName = sMethodName;
-		/**
-		 * oTracer is the reference to the Tracer
-		 * @member Trace.prototype
-		 * @type {Tracer}
-		 */
-		this.oTracer = oTracer;
+	Level.prototype.toString = function () {
+		return this.sLevel;
 	};
 	/**
-	 * formatArguments returns the arguments passed to the function as a string
-	 * @member Trace.prototype
-	 * @param aArgs
-	 * @type {Array}
-	 * @return {String}
+	 * valueOf returns the number of Level
+	 * @return nLevel
+	 * @type {Number}
 	 */
-	Trace.prototype.formatArguments = function (aArgs) {
-		return '(' + aArgs.join(", ") + ')';
+	Level.prototype.valueOf = function () {
+		return this.nLevel;
 	};
 	/**
-	 * getIndentation returns the indentation
-	 * @member Trace.prototype
-	 * @return {String}
-	 */
-	Trace.prototype.getIndentation = function () {
-		return this.sIndentString;
-	};
-	/**
-	 * getMethodNameIndentedAndParams return the string with method name and formatted arguments.
-	 * @member Trace.prototype
-	 * @return {String}
-	 */
-	Trace.prototype.getMethodNameIndentedAndParams = function(aArgs) {
-		return (this.getIndentation() + this.sMethodName + this.formatArguments(aArgs));
-	};
-	/**
-	 * getProfile return the string with method name, result and time that took the execution
-	 * @member Trace.prototype
-	 * @return {String}
-	 */
-	Trace.prototype.getProfile = function(nStart, oResult) {
-		return this.getIndentation(true) + this.sMethodName + ' -> result: ' + oResult + '. (' + (+new Date() - nStart) + 'ms)';
-	};
-	/**
-	 * wrap is the method to wrap all the methods to trace
-	 * @member Trace.prototype
-	 */
-	Trace.prototype.wrap = function() {
-		var sKey = '';
-		for (sKey in this.oConstructor) {
-			this[sKey] = this.oConstructor[sKey];
-		}
-	};
-	/**
-	 * Tracer is the class that start the automatic tracer for the element that you want to trace
-	 * Is possible to trace more than one object at the same time.
-	 * @private
-	 * @class Tracer
-	 * @constructor
-	 */
-	Tracer = function () {
-		/**
-		 * rNativeCode is the regular expression that returns if the content is native code or not.
-		 * @member Tracer.prototype
-		 * @type {RegExp}
-		 */
-		this.rNativeCode = /\[native code\]/;
-		/**
-		 * nIndentCount is the number of indents.
-		 * Missing modification - maybe in the next version -
-		 * @member Tracer.prototype
-		 * @type {Number}
-		 */
-		this.nIndentCount = -4;
-		/**
-		 * aTracing is the array where all the trace elements will be saved to remove it if needed
-		 * @member Tracer.prototype
-		 * @type {Array}
-		 */
-		this.aTracing = [];
-	};
-	/**
-	 * trace gets the method to trace and wraps his content
-	 * @member Tracer.prototype
-	 * @param oConstructor
-	 * @type {Function}
-	 * @param sMethodName
-	 * @type {String}
-	 * @return {function} Depends of the execution
-	 */
-	Tracer.prototype.trace = function (oConstructor, sMethodName) {
-		var oTrace = new Trace(oConstructor, sMethodName, this);
-		oTrace.wrap();
-		oHermes.addError(new TraceMessage("Tracing: " + sMethodName));
-		return function () {
-			var oResult = null,
-				nStart = +new Date(),
-				aArgs = Array.prototype.slice.call(arguments);
-			oHermes.addError(new TraceMessage(oTrace.getMethodNameIndentedAndParams(aArgs)));
-			oResult = oConstructor.apply(oTrace, arguments);
-			oHermes.addError(new TraceMessage(oTrace.getProfile(nStart, oResult)));
-			return oResult;
-		}
-	};
-	/**
-	 * addTracing adds a new element to trace
-	 * @member Tracer.prototype
-	 * @param oTracing
-	 * @type {Trace}
-	 */
-	Tracer.prototype.addTracing = function(oTracing) {
-		this.aTracing.push(oTracing);
-	};
-	/**
-	 * traceAll trace all the methods in oRoot to be traceable
-	 * @member Tracer.prototype
-	 * @param oRoot
-	 * @type {Object}
-	 * @param bRecursive
-	 * @type {Boolean}
-	 */
-	Tracer.prototype.traceAll = function (oRoot, bRecursive) {
-		var sKey = '';
-		var oThat = null;
-		if ((oRoot === win) || !((typeof oRoot === 'object')) || (typeof oRoot === 'function')) {
-			return;
-		}
-		for (sKey in oRoot) {
-			if (oRoot[sKey] !== oRoot) {
-				oThat = oRoot[sKey];
-				if (typeof oThat === 'function') {
-					if ((this !== oRoot) && !oThat.oConstructor && !this.rNativeCode.test(oThat)) {
-						oRoot[sKey] = this.trace(oRoot[sKey], sKey);
-						this.addTracing({
-							oObj: oRoot,
-							sMethodName: sKey
-						});
-					}
-				}
-				bRecursive && this.traceAll(oThat, true);
-			}
-		}
-	};
-	/**
-	 * resetTracing removes all the traceable elements
-	 * @member Tracer.prototype
-	 */
-	Tracer.prototype.resetTracing = function () {
-		this.aTracking = [];
-	};
-	/**
-	 * untraceAll removes all the traceable elements and restore the original object
-	 * @member Tracer.prototype
-	 */
-	Tracer.prototype.untraceAll = function () {
-		var nTrace = 0;
-		var aTracing = this.aTracing;
-		var nLenTrace = aTracing.length;
-		var oTrace = null;
-		for (; nTrace < nLenTrace; nTrace++) {
-			oTrace = aTracing[nTrace];
-			oTrace.oObj[oTrace.sMethodName] = oTrace.oObj[oTrace.sMethodName].oConstructor;
-		}
-		oHermes.addError(new TraceMessage("Tracing disabled"));
-		this.resetTracing();
-	};
-	/**
-	 * DisruptorError is a special error class that will disrupt the execution.
-	 * It will throw an error, that will not be logged by Hermes, to disrupt the execution.
-	 * @extends ErrorExt
-	 * @class DisruptorError
-	 * @constructor
-	 * @param sMessage
-	 * @param sFilenameUrl
-	 */
-	DisruptorError = function(sMessage, sFilenameUrl)
-	{
-		ErrorExt.call(this, Level.DISRUPTOR, "Error that disrupt execution", sMessage, sFilenameUrl);
-	};
-	DisruptorError.prototype = new ErrorExt();
-	/*
-	 * oHermes is the instance of Hermes.
-	 */
-	oHermes = new Hermes(Level.ALL, Hermes.IMMEDIATE).addAppender(new ConsoleAppender());
-	/*
-	 * fpErrorTrap is the method that will be called when uncaught errors are launched
-	 * Returns false to avoid default behaviour.
+	 * Compare two different levels to know if are the same
+	 * @param oLevel1
+	 * @param oLevel2
 	 * @return {Boolean}
 	 */
-	win.onerror = function fpErrorTrap(sErrorMsg, sFileNameUrl, nLineNumber) {
-		/*
-		 * This conditional checks for a Disruptor Error
-		 */
-		if(sErrorMsg.replace("Uncaught Error: ", "") !== sDisruptorMessage)
-		{
-			oHermes.addError(new ErrorExt(oHermes.oLevel, getTypeFromMessage(sErrorMsg), removeTypeFromMessage(sErrorMsg), sFileNameUrl, nLineNumber));
+	Level.compare = function(oLevel1, oLevel2){
+		var nValueOf = oLevel1.valueOf(),
+			bCompare = nValueOf === oLevel2.valueOf();
+		if(nValueOf === Level.ALL.valueOf()){
+			bCompare = true;
+		}else if(nValueOf === Level.OFF.valueOf()){
+			bCompare = false;
 		}
-		/**
-		 * Return false avoids the browser to manage the errors.
-		 */
-		return false;
+		return bCompare;
 	};
+	/**
+	 * Appender is the class that will log or clear messages
+	 * @abstract
+	 * @private
+	 * @class Appender
+	 * @constructor
+	 * @param oLayout
+	 * @type {Layout}
+	 */
+	Appender = function (oLayout) {
+		/**
+		 * sName is the name of the appender
+		 * @member Appender.prototype
+		 * @type {String}
+		 */
+		this.sName = '[object Appender]';
+		/**
+		 * oLayout is the Layout instance to be used to format the message before append it
+		 * @member Appender.prototype
+		 * @type {Layout}
+		 */
+		this.oLayout = oLayout || null;
+	};
+	/**
+	 * setName is the method to set the name of Appender
+	 * @member Appender.prototype
+	 * @param sName
+	 * @type {String}
+	 * @return Appender instance
+	 */
+	Appender.prototype.setName = function (sName) {
+		this.sName = sName;
+		return this;
+	};
+	/**
+	 * setLayout is the method to set the layout for Appender
+	 * @member Appender.prototype
+	 * @param oLayout
+	 * @type {Layout}
+	 * @return Appender instance
+	 */
+	Appender.prototype.setLayout = function (oLayout) {
+		this.oLayout = oLayout;
+		return this;
+	};
+	/**
+	 * toString is the method to overwrite the Object.prototype.toString
+	 * @member Appender.prototype
+	 * @return {String}
+	 */
+	Appender.prototype.toString = function () {
+		return this.sName;
+	};
+	/**
+	 * log is an abstract method that needs to be overwritten on extended classes to make it work.
+	 * @member Appender.prototype
+	 * @param {Message} oMessage
+	 */
+	Appender.prototype.log = function (oMessage) {
+		throw new Error("This method must be overwritten!");
+	};
+	/**
+	 * clear is an abstract method that needs to be overwritten on extended classes to make it work.
+	 * @member Appender.prototype
+	 */
+	Appender.prototype.clear = function () {
+		throw new Error("This method must be overwritten!");
+	};
+	/**
+	 * Layout is the class that will format the messages before send it to the Appender class
+	 * @abstract
+	 * @private
+	 * @class Layout
+	 * @constructor
+	 */
+	Layout = function () {
+
+	};
+	/**
+	 * format is an abstract method that needs to be overwritten on extended classes to make it work.
+	 * @member Layout.prototype
+	 * @param oMessage
+	 * @type {Message}
+	 */
+	Layout.prototype.format = function (oMessage) {
+		throw new Error("This method must be overwritten!");
+	};
+	/**
+	 * Hermes is the class that manages Appender, Messages, Deferred calls and Levels of Messages to show
+	 * We can add Message but if the Message is not of the same level the message will not be showed.
+	 * If the Hermes Message Level is ALL all the logs will be added
+	 * If the Hermes Message Level is OFF no log will be added
+	 * The add of logs can be deferred to avoid multiple calls that block browser
+	 * @private
+	 * @class Hermes
+	 * @constructor
+	 * @param {Level} oLevel
+	 * @param {Number} nImmediate
+	 * @param {Number} nTimeout
+	 */
+	Hermes = function (oLevel, nImmediate, nTimeout) {
+		/**
+		 * oAppender is the object that will contain the Appender to append messages
+		 * @member Hermes.prototype
+		 * @type {Object}
+		 */
+		this.oAppenders = {};
+		/**
+		 * aMessages is the array that will contain the Messages
+		 * @member Hermes.prototype
+		 * @type {Array}
+		 */
+		this.aMessages = [];
+		/**
+		 * oLevel is the Level instance to manage the Message Level to show.
+		 * @member Hermes.prototype
+		 * @type {Level}
+		 */
+		this.oLevel = oLevel || null;
+		/**
+		 * nTimeLastSent is the number of milliseconds of the last sent
+		 * now date by default
+		 * @member Hermes.prototype
+		 * @type {Number}
+		 */
+		this.nTimeLastSent = this.now();
+		/**
+		 * nImmediate is the config number to defer or not the append of logs
+		 * @member Hermes.prototype
+		 * @type {Number}
+		 */
+		this.nImmediate = nImmediate || Hermes.DEFERRED;
+		/**
+		 * nTimeout is the number of milliseconds to defer the append of logs
+		 * @member Hermes.prototype
+		 * @type {Number}
+		 */
+		this.nTimeout = nTimeout || 0;
+	};
+	/**
+	 * @static
+	 * @type {Number}
+	 */
+	Hermes.DEFERRED = 0;
+	/**
+	 * @static
+	 * @type {Number}
+	 */
+	Hermes.IMMEDIATE = 1;
+	Hermes.prototype.setTimeToLog = function(nTimeoutToLogMilliseconds)
+	{
+		this.nTimeout = nTimeoutToLogMilliseconds;
+		return this;
+	};
+	/**
+	 * deferLog change the method to append logs to be deferred
+	 * @member Hermes.prototype
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.deferLog = function () {
+		this.nImmediate = Hermes.DEFERRED;
+		return this;
+	};
+	/**
+	 * immediateLog change the method to append logs to be immediate
+	 * @member Hermes.prototype
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.immediateLog = function () {
+		this.nImmediate = Hermes.IMMEDIATE;
+		return this;
+	};
+	/**
+	 * now returns the number of milliseconds at the moment of the execution of this method
+	 * @member Hermes.prototype
+	 * @return {Number} Milliseconds
+	 */
+	Hermes.prototype.now = function () {
+		return +new Date();
+	};
+	/**
+	 * setLevel set a new Level for the Hermes
+	 * Before change the level it's checked if oLevel is instance of Level to be assigned or not.
+	 * @member Hermes.prototype
+	 * @param oLevel
+	 * @type {Level}
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.setLevel = function (oLevel) {
+		if (oLevel instanceof Level) {
+			this.oLevel = oLevel;
+		}
+		return this;
+	};
+	/**
+	 * addAppender add a new Appender to Hermes. When the Appender is added starts to log messages
+	 * Before add a new Appender it's checked if oAppender is instance of Appender to be added or not.
+	 * @member Hermes.prototype
+	 * @param oAppender
+	 * @type {Appender}
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.addAppender = function (oAppender) {
+		if (oAppender instanceof Appender) {
+			this.oAppenders[oAppender.toString()] = oAppender;
+		}
+		return this;
+	};
+	/**
+	 * removeAppender removes the Appender. When the Appender is removed stops to log messages
+	 * @member Hermes.prototype
+	 * @param oAppender
+	 * @type {Appender}
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.removeAppender = function (oAppender) {
+		delete this.oAppenders[oAppender.toString()];
+		return this;
+	};
+	/**
+	 * setAppender add an array of Appender to be added in one step.
+	 * @member Hermes.prototype
+	 * @param aAppenders
+	 * @type {Array}
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.setAppenders = function (aAppenders) {
+		var nAppender = 0,
+			nLenAppender = aAppenders.length,
+			oAppender = null;
+
+		for (nAppender = 0; nAppender < nLenAppender; nAppender = nAppender + 1) {
+			oAppender = aAppenders[nAppender];
+			this.addAppender(oAppender);
+		}
+		return this;
+	};
+	/**
+	 * isSameLevel checks if the Message Level is the same that in oMessage
+	 * The method returns true if Level is ALL to allow log all the logs
+	 * The method returns false if Level is OFF to avoid log any log
+	 * @member Hermes.prototype
+	 * @param oMessage
+	 * @type {Message}
+	 * @return {Boolean}
+	 */
+	Hermes.prototype.isSameLevel = function (oMessage) {
+		return Level.compare(this.oLevel, oMessage.oLevel);
+	};
+	/**
+	 * sendMessage executes the action in Appender for each Message.
+	 * @member Hermes.prototype
+	 * @param oAppender
+	 * @type {Appender}
+	 * @param sAction
+	 * @type {String}
+	 */
+	Hermes.prototype.sendMessage = function (oAppender, sAction) {
+		var nMessage = 0,
+			nLenMessage = this.aMessages.length,
+			oMessage = null;
+		if (oAppender[sAction] === und) {
+			return;
+		}
+
+		for (; nMessage < nLenMessage;nMessage = nMessage + 1) {
+			oMessage = this.aMessages[nMessage];
+			if (this.isSameLevel(oMessage)) {
+				oAppender[sAction](oMessage);
+			}
+		}
+		this.nTimeLastSent = this.now();
+	};
+	/**
+	 * isImmediate checks if nImmediate is equals to Hermes.IMMEDIATE
+	 * @member Hermes.prototype
+	 * @return {Boolean}
+	 */
+	Hermes.prototype.isImmediate = function (oMessage) {
+		return this.nImmediate === Hermes.IMMEDIATE;
+	};
+	/**
+	 * isTimeToSend checks if now is time to sent new logs to the appender
+	 * @member Hermes.prototype
+	 * @return {Boolean}
+	 */
+	Hermes.prototype.isTimeToSend = function () {
+		return this.now() >= this.nextTimeToSend();
+	};
+	/**
+	 * notifyAppender send the message log for all the Appender if the execution is Deferred and is time to send new logs or if the execution is Immediate.
+	 * after execute notifyAppender the message are reset to allow new messages to log.
+	 * @member Hermes.prototype
+	 * @param {String} sAction
+	 * @param {Message} oMessage
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.notifyAppender = function (sAction, oMessage) {
+		var sKey = '',
+			oAppender = null;
+		sAction = sAction.toLowerCase();
+
+		if (this.isImmediate(oMessage) || this.isTimeToSend()) {
+			for (sKey in this.oAppenders) {
+				if (this.oAppenders.hasOwnProperty(sKey)) {
+					oAppender = this.oAppenders[sKey];
+					this.sendMessage(oAppender, sAction);
+				}
+			}
+			this.resetMessages();
+		}
+		return this;
+	};
+	/**
+	 * addMessage check if oMessage is instance of Message and if it's the error is added and the notifyAppender is called
+	 * notifyAppender is executed to defer or log the message.
+	 * @member Hermes.prototype
+	 * @param oMessage
+	 * @type {Message}
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.addMessage = function (oMessage) {
+		if (oMessage instanceof Message) {
+			this.aMessages.push(oMessage);
+			this.log(oMessage);
+		}
+		return this;
+	};
+	/**
+	 * resetMessages clean all the messages and errors in the aMessages Array
+	 * @member Hermes.prototype
+	 */
+	Hermes.prototype.resetMessages = function () {
+		this.aMessages = [];
+	};
+	/**
+	 * nextTimeToSend returns the time to know, if the method of log is Deferred, if it's possible to log messages.
+	 * @member Hermes.prototype
+	 * @return {Number}
+	 */
+	Hermes.prototype.nextTimeToSend = function () {
+		return this.nTimeLastSent + this.nTimeout;
+	};
+	/**
+	 * forceLog will log messages even if the method of log is Deferred.
+	 * @member Hermes.prototype
+	 * @return Hermes instance
+	 */
+	Hermes.prototype.forceLog = function () {
+		this.immediateLog();
+		this.log();
+		this.deferLog();
+		return this;
+	};
+	/**
+	 * log is the method that will log messages
+	 * @member Hermes.prototype
+	 */
+	Hermes.prototype.log = function (oMessage) {
+		this.notifyAppender("log", oMessage);
+	};
+	/**
+	 * clear is the method that will clear messages
+	 * @member Hermes.prototype
+	 */
+	Hermes.prototype.clear = function () {
+		this.notifyAppender("clear");
+	};
+
+	oHerm = new Hermes();
+
 	/*
 	 * This object expose the private classes as global to use it from outside of the module.
 	 */
-	NS.Hermes = {
-		logger: oHermes,
-		appender: Appender,
+	/**
+	 * Exposing it to the namespace Hermes
+	 * It will be used as a property of the namespace.
+	 * ns.Hermes
+	 * @namespace ns.Hermes
+	 * @type {Object}
+	 */
+	oHermes = {
+		/**
+		 * Original Hermes class that will be used as logger
+		 * It can be used to modify the behaviour of logging if needed.
+		 * @type {Hermes}
+		 */
+		basic: Hermes,
+		/**
+		 * Instance of Hermes to log messages
+		 * @type {Hermes}
+		 */
+		logger: oHerm,
+		/**
+		 * Expose the private Level object to extend from.
+		 * @type {Level}
+		 */
 		level: Level,
-		error: ErrorExt,
-		disruptorError: DisruptorError,
+		/**
+		 * Expose the private Layout object to extend from.
+		 * @type {Layout}
+		 */
 		layout: Layout,
-		tracer: new Tracer()
+		/**
+		 * Expose the private Appender object to extend from.
+		 * @type {Appender}
+		 */
+		appender: Appender,
+		/**
+		 * Expose the private Message object to extend from.
+		 * @type {Message}
+		 */
+		message: Message,
+		/**
+		 * Method to extend public Hermes object with new features.
+		 * @param {String} sProperty
+		 * @param {Object} oValue
+		 */
+		extend: function(sProperty, oValue)
+		{
+			this[sProperty] = oValue;
+		}
 	};
+	ns.Hermes = oHermes;
 }(window, document));
