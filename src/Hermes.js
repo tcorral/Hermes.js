@@ -397,6 +397,14 @@
 	Appender.prototype.log = function (oMessage) {
 		throw new Error("This method must be overwritten!");
 	};
+  /**
+   * error is an abstract method that needs to be overwritten on extended classes to make it work.
+   * @member Appender.prototype
+   * @param {Message} oMessage
+   */
+  Appender.prototype.error = function (oMessage) {
+    throw new Error("This method must be overwritten!");
+  };
 	/**
 	 * clear is an abstract method that needs to be overwritten on extended classes to make it work.
 	 * @member Appender.prototype
@@ -697,6 +705,13 @@
 	Hermes.prototype.log = function (oMessage) {
 		this.notifyAppender("log", oMessage);
 	};
+  /**
+   * error is the method that will log error messages
+   * @member Hermes.prototype
+   */
+  Hermes.prototype.error = function (oMessage) {
+    this.notifyAppender("error", oMessage);
+  };
 	/**
 	 * clear is the method that will clear messages
 	 * @member Hermes.prototype

@@ -326,7 +326,7 @@
 		}
 	}));
 
-	oTestCase("HermesLoggerIsTimeToSentTest", sinon.testCase({
+	oTestCase("HermesLoggerIsTimeToSendTest", sinon.testCase({
 		setUp: function () {
 			this.oNextTimeToSentStub = sinon.stub(Hermes.logger, "nextTimeToSend");
 			this.oNowStub = sinon.stub(Hermes.logger, "now");
@@ -445,7 +445,7 @@
 		}
 	}));
 
-	oTestCase("HermesLoggerNextTimeToSentTest", sinon.testCase({
+	oTestCase("HermesLoggerNextTimeToSendTest", sinon.testCase({
 		setUp: function () {
 			this.nTimeLastSent = Hermes.logger.nTimeLastSent;
 			this.nTimeout = Hermes.logger.nTimeout;
@@ -500,6 +500,21 @@
 			assertEquals('log', Hermes.logger.notifyAppender.getCall(0).args[0]);
 		}
 	}));
+
+  oTestCase("HermesLoggerErrorTest", sinon.testCase({
+    setUp: function () {
+      sinon.stub(Hermes.logger, "notifyAppender");
+    },
+    tearDown: function () {
+      Hermes.logger.notifyAppender.restore();
+    },
+    "test should call notifyAppender one time with 'error' as argument": function () {
+      Hermes.logger.error();
+
+      assertEquals(1, Hermes.logger.notifyAppender.callCount);
+      assertEquals('error', Hermes.logger.notifyAppender.getCall(0).args[0]);
+    }
+  }));
 
 	oTestCase("HermesLoggerClearTest", sinon.testCase({
 		setUp: function () {
